@@ -13,22 +13,22 @@ nav ul {
         padding: .25em;
     }
 
-#messages {
+.messages {
     list-style: none;
     margin: 0;
     padding: 0;
 }
-    #messages li {
+    .messages li {
         border: 1px solid #c8c8c8;
         color: #333;
         margin: .5em 0;
         padding: .25em;
     }
-    #messages li.error {
+    .messages li.error {
         border-color: red;
         color: red;
     }
-    #messages li.success {
+    .messages li.success {
         border-color: green;
         color: green;
     }

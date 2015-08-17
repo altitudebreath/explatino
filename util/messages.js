@@ -1,3 +1,5 @@
+'use strict';
+
 var flash = require('connect-flash');
 
 module.exports = function() {
@@ -9,13 +11,13 @@ module.exports = function() {
         for(var i in error_messages) {
             res.locals.messages.push({type: 'error', message: error_messages[i]});
         }
-        for(var i in info_messages) {
+        for(i in info_messages) {
             res.locals.messages.push({type: 'info', message: info_messages[i]});
         }
-        for(var i in success_messages) {
+        for(i in success_messages) {
             res.locals.messages.push({type: 'success', message: success_messages[i]});
         }   
         res.locals.isAuthenticated = req.isAuthenticated();
         next();
-    }
-}
+    };
+};

@@ -1,0 +1,88 @@
+sudo apt-get install git
+
+sudo apt-get install software-properties-common
+
+
+curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.25.4/install.sh | bash
+
+nvm install 0.12
+
+npm install -g yo gulp knex
+
+
+---------------------------------- remote -----------------------------------
+curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.25.4/install.sh | bash
+
+nvm install 0.12
+
+
+------------------------------------ MariaDB in case no in repos --------------------------
+sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xcbcb082a1bb943db
+sudo add-apt-repository 'deb http://mirrors.coreix.net/mariadb/repo/10.0/ubuntu vivid main'
+sudo apt-get update
+sudo apt-get install mariadb-server
+
+
+------------------------------------ MariaDB setup ----------------------   
+sudo mysql_install_db -u mysql	# Install new database
+sudo mysql_secure_install
+
+systemctl restart mysql
+
+create database myapp_kit;
+GRANT ALL ON myapp.* TO myapp@localhost IDENTIFIED BY 'somepass';
+
+GRANT ALL PRIVILEGES ON myapp.* TO 'myapp'@'%' IDENTIFIED BY 'somepass' WITH GRANT OPTION;
+
+rename user 'root'@'localhost' to 'newAdminUser'@'localhost';
+
+
+nano /etc/mysql/my.cnf
+
+[mysqld]
+bind-address=0.0.0.0
+local-infile=0
+#log=/var/log/mysql-logfile
+init_connect                = 'SET collation_connection = utf8_general_ci,NAMES utf8'
+collation_server            = utf8_general_ci
+character_set_client        = utf8
+character_set_server        = utf8
+
+------------------------------- MariaDB issues ----------------------------
+sudo rm -r /var/lib/mysql*		# Remove any old database setup
+sudo mysql_install_db -u mysql	# Install new database
+sudo systemctl unmask mysql.service	# Emables the service for systemd
+sudo systemctl start	mysql	# start the service.
+
+#if needed: sudo apt-get purge mysql* mariadb*
+
+
+----------------------------- nginx -----------------------
+systemctl enable nginx
+
+nano /etc/nginx/sites-available/default
+
+server {
+    listen 80;
+
+    server_name 45.55.240.249;
+
+    location ~ ^/(public/|robots.txt|humans.txt|favicon.ico) {
+      root /www/myapp;
+      access_log off;
+      expires 24h;
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+}
+
+----------------------- 

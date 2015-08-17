@@ -1,3 +1,4 @@
+'use strict';
 
 module.exports = {
   
@@ -5,8 +6,8 @@ module.exports = {
     // var rendering = require('./util/rendering');
     // rendering.render(req, res, data);
     render: function(req, res, data) {
-        res.header("Access-Control-Allow-Origin", "*");
-        res.header("Access-Control-Allow-Headers", "X-Requested-With");
+        res.header('Access-Control-Allow-Origin', '*');
+        res.header('Access-Control-Allow-Headers', 'X-Requested-With');
 
         if(/application\/json/.test(req.get('accept'))) {
             res.json(data);
@@ -16,4 +17,4 @@ module.exports = {
             });
         }
     }
-}
+};

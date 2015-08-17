@@ -1,11 +1,13 @@
+'use strict';
+
 var crypto = require('crypto'),
     passport = require('passport'),
-    data = require('../models/auth')();
+    User = require('../models/user.model');
 
 
 exports.registerPage = function(req, res) {
     res.render('login/register', {username: req.flash('username')});
-}
+};
 
 
 exports.registerPost = function(req, res) {
@@ -34,20 +36,20 @@ exports.registerPost = function(req, res) {
     var pw = crypto.createHmac('sha1', new_salt).update(pwu).digest('hex');
     var created = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-    new data.ApiUser({email: un, password: pw, salt: new_salt, created: created}).save().then(function(model) {
+    new User({email: un, password: pw, salt: new_salt, created: created}).save().then(function(model) {
         passport.authenticate('local')(req, res, function () {
             res.redirect('/home');
-        })
+        });
     }, function(err) {
         req.flash('error', 'Unable to create account.');
         res.redirect('/register');
     });
-}
+};
 
 
 exports.loginPage = function(req, res) {
     res.render('login/index', {username: req.flash('username')});
-}
+};
 
 
 exports.checkLogin = function(req, res, next) {
@@ -57,7 +59,7 @@ exports.checkLogin = function(req, res, next) {
             req.flash('error', info.message);
             return res.redirect('/login');
         }
-        req.logIn(user, function(err) {
+        req.login(user, function(err) {
             if (err) {
                 req.flash('error', info.message);
                 return res.redirect('/login');
@@ -66,11 +68,11 @@ exports.checkLogin = function(req, res, next) {
             return res.redirect('/home');
         });
     })(req, res, next);
-}
+};
 
 
 exports.logout = function(req, res) {
     req.logout();
     req.flash('info', 'You are now logged out.');
     res.redirect('/login');
-}
+};

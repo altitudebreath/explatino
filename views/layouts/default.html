@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
         <meta charset="utf-8">
         <title>Sample Node/Express/MySQL App</title>
-        <link rel="stylesheet" href="/css/layout.css">
+        <!-- Application CSS Files -->
+       	{% for cssFile in cssFiles %}<link rel="stylesheet" href="{{cssFile}}">{% endfor %}
     </head>
     <body>
         <nav>
@@ -18,12 +19,21 @@
             </ul>
         </nav>
 
-        <ul id="messages">
+        <ul id="messages" class="messages">
         {% for message in messages %}
             <li class="{{ message.type }}">{{ message.message }}</li>
         {% endfor %}
         </ul>
 
         {% block content %}{% endblock %}
+
+            <!--Application JavaScript Files-->
+        {% for jsFile in jsFiles %}<script type="text/javascript" src="{{jsFile}}"></script>{% endfor %}
+       
+        {% if livereload %}
+        <!--Livereload script rendered -->
+        <script type="text/javascript" src="{{host}}:35729/livereload.js"></script>
+        {% endif %}
+    
     </body>
 </html>

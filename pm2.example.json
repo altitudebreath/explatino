@@ -1,0 +1,51 @@
+{
+    "apps": [
+        {
+            "name": "yourserver",
+            "script": "server.js",
+            "args": [],
+            "watch": false,
+            "node_args": [
+                "--harmony",
+                " --max-stack-size=102400000"
+            ],
+            "error_file": "logs/stderr.log",
+            "out_file": "logs/stdout.log",
+            "pid_file": "pids/yourserver.pid",
+            "exec_interpreter": "node",
+            "exec_mode": "cluster",
+            "instances": 0,
+            "min_uptime": "200s",
+            "max_restarts": 10,
+            "max_memory_restart": "50M",
+            "cron_restart": "1 0 * * *",
+            "ignore_watch": [
+                "[\\/\\\\]\\./",
+                "node_modules"
+            ],
+            "merge_logs": true,
+            "autorestart": true,
+            "vizion": true,
+            "merge_logs": true,
+            "cwd": "/www/yourserver",
+            "log_date_format": "YYYY-MM-DD HH:mm Z",
+            "env": {
+                "NODE_ENV": "production"
+            }
+        }
+    ],
+    "deploy" : {
+      "production" : {
+        "user" : "root",
+        "host" : "11.11.11.11",
+        "ref"  : "origin/prod",
+        "repo" : "git@bitbucket.org:yourname/reponame.git", 
+        "path" : "/www/yourserver/prod",
+        "post-deploy" : "pm2 gracefulReload pm2.json --env production",
+        "env"  : {
+            "NODE_ENV": "production"
+        }
+      }
+    }
+        
+}
