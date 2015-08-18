@@ -44,7 +44,7 @@ exports.registerPost = function(req, res) {
             passport.authenticate('local')(req, res, function () {
                 res.redirect('/home');
             });
-        }, function(err) {
+        }).catch(function(err) {
             console.log(err);
             req.flash('error', 'Unable to create account.');
             res.redirect('/register');

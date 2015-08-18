@@ -8,7 +8,8 @@ var express = require('express'),
     bodyParser = require('body-parser'),
     cookieParser = require('cookie-parser'),
     session = require('express-session'),
-   	KnexSessionStore = require('connect-session-knex')(session),
+   	//SessionStore = require('connect-session-knex')(session),
+    SessionStore = require('express-mysql-session'),
     serveStatic = require('serve-static'),
     expressValidator = require('express-validator'),
     flash = require('connect-flash'),
@@ -27,12 +28,12 @@ function initLocalVariables (app) {
     var files = config.env.files;
     
 	// Setting application local variables
-	app.locals.secure = config.secure;
+	app.locals.secure = config.env.secure;
     //assign proper runtime files - raw or minified depending on environment
 	app.locals.jsFiles = files.clientRuntime.js;
 	app.locals.cssFiles = files.clientRuntime.css;
     
-	app.locals.livereload = config.livereload;
+	app.locals.livereload = config.env.livereload;
 
     console.log(chalk.magenta(JSON.stringify(app.locals)));
 
@@ -68,11 +69,12 @@ function initSession (app) {
 	app.use(session({
 		saveUninitialized: true,
 		resave: true,
-		secret: config.sessionSecret,
-		store: new KnexSessionStore({
-			tablename: config.sessionTable,
-			knex: config.knex
-		})
+		secret: config.env.sessionSecret,
+		store: new SessionStore(config.env.db.connection),
+		//store: new SessionStore({
+		//	tablename: config.sessionTable,
+		//	knex: config.knex
+		//})
 	}));
     app.use(passport.initialize());
     app.use(passport.session());

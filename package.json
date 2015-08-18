@@ -20,6 +20,7 @@
     "cookie-session": "^1.1.0",
     "crypto": "^0.0.3",
     "express": "^4.13.3",
+    "express-mysql-session": "^0.4.1",
     "express-session": "^1.11.3",
     "express-validator": "^2.10.0",
     "glob": "^5.0.14",
