@@ -7,12 +7,12 @@ var crypto = require('crypto'),
 module.exports = function(passport) {
 
     passport.serializeUser(function(user, done) {
-        done(null, user.id);
+        done(null, user.get('id'));
     });
 
 
     passport.deserializeUser(function(user_id, done) {
-        new User({id: user_id}).fetch().then(function(user) {
+        new User().findById(user_id).then(function(user) {
             return done(null, user);
         }, function(error) {
             return done(error);
@@ -21,14 +21,11 @@ module.exports = function(passport) {
 
 
     passport.use(new LocalStrategy({
-        usernameField: 'un',
-        passwordField: 'pw'
+        usernameField: 'username',
+        passwordField: 'password'
     },function(email, password, done) {
-        new User({email: email}).fetch({require: true}).then(function(user) {
-            var sa = user.get('salt');
-            var pw = user.get('password');
-            var upw = crypto.createHmac('sha1', sa).update(password).digest('hex');
-            if(upw === pw) {
+        new User().findBy({email: email}).then(function(user) {
+            if(user.authenticate(password)) {
                 return done(null, user);
             }
             return done(null, false, { 'message': 'Invalid password'});

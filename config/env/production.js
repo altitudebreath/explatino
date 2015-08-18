@@ -1,6 +1,8 @@
 'use strict';
 
 module.exports = {
+    PROD: true,
+    DEBUG: false,
 	secure: true,
 	port: process.env.PORT || 8080,
 	db: {

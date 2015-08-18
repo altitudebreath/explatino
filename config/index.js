@@ -88,25 +88,27 @@ var getGlobbedPaths = function(globPatterns, cutouts) {
     return output;
 };
 
-var initGlobalConfigFiles = function(config, assets) {
+var initGlobalConfigFiles = function(env, assets) {
     // Appending files
-    config.files = {
+    env.files = {
         server: {},
         client: {},
         clientRuntime: {}
     };
 
-    // Setting Globbed js files
-    config.files.client.js = getGlobbedPaths(assets.client.js, ['client/', 'public/']);
+    var cutouts =  ['client/', 'public/', 'assets/'];
 
     // Setting Globbed js files
-    config.files.clientRuntime.js = getGlobbedPaths(assets.clientRuntime.js, ['client/', 'public/']);
+    env.files.client.js = getGlobbedPaths(assets.client.js, cutouts);
+
+    // Setting Globbed js files
+    env.files.clientRuntime.js = getGlobbedPaths(assets.clientRuntime.js, cutouts);
 
     // Setting Globbed css files
-    config.files.client.css = getGlobbedPaths(assets.client.css, ['client/', 'public/']);
+    env.files.client.css = getGlobbedPaths(assets.client.css, cutouts);
 
     // Setting Globbed css files
-    config.files.clientRuntime.css = getGlobbedPaths(assets.clientRuntime.css, ['client/', 'public/']);
+    env.files.clientRuntime.css = getGlobbedPaths(assets.clientRuntime.css, cutouts);
 
 };
 
@@ -174,6 +176,7 @@ var getEnv = function () {
  */
 var initGlobalConfig = function() {
     // Validate NDOE_ENV existance
+    console.log('INIT CONFIG');
     validateEnvironmentVariable();
 
     var assets = getAssets();

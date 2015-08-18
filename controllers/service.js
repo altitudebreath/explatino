@@ -1,11 +1,5 @@
 'use strict';
 
-exports.error500 = function(req, res) {
-	res.status(500).render('errors/500', {
-		error: 'Oops! Something went wrong...'
-	});
-};
-
 /**
  * Render the server not found responses
  * Performs content-negotiation on the Accept HTTP header
@@ -25,4 +19,5 @@ exports.error404 = function(req, res, next) {
 				res.send('Path not found');
 			}
 		});
+    next();
 };

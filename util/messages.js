@@ -1,7 +1,5 @@
 'use strict';
 
-var flash = require('connect-flash');
-
 module.exports = function() {
     return function(req, res, next) {
         var error_messages = req.flash('error');

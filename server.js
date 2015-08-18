@@ -18,17 +18,23 @@ var express = require('express'),
     messages = require('./util/messages'),
     helmet = require('helmet'),
     favicon = require('serve-favicon'),
-    compress = require('compression');
+    compress = require('compression'),
+    chalk = require('chalk');
 
 
 function initLocalVariables (app) {
+    
+    var files = config.env.files;
+    
 	// Setting application local variables
 	app.locals.secure = config.secure;
     //assign proper runtime files - raw or minified depending on environment
-	app.locals.jsFiles = config.files.clientRuntime.js;
-	app.locals.cssFiles = config.files.clientRuntime.css;
+	app.locals.jsFiles = files.clientRuntime.js;
+	app.locals.cssFiles = files.clientRuntime.css;
     
 	app.locals.livereload = config.livereload;
+
+    console.log(chalk.magenta(JSON.stringify(app.locals)));
 
 	// Passing the request url to environment locals
 	app.use(function (req, res, next) {
@@ -39,18 +45,24 @@ function initLocalVariables (app) {
 }
 
 var initErrorRoutes = function (app) {
-	app.use(function (err, req, res, next) {
-		// If the error object doesn't exists
-		if (!err) return next();
+    app.use(function (err, req, res, next) {
+        // If the error object doesn't exists
+        if (!err) return next('route');
 
-		// Log it
-		console.error(err.stack);
+        console.error(err.stack);
 
-		// Redirect to error page
-		res.redirect('/server-error');
-	});
+        if (req.xhr) {
+            res.status(500).send({error: 'Something blew up!'});
+        } else {
+            res.status(500).send('<h>Server error</h><br />' +
+            config.env.DEV ? err.stack : '');
+        }
+        //res.status(500).render('errors/500', {
+       	//	error: 'Oops! Something went wrong...'
+       	//});
+    });
 };
-
+    
 function initSession (app) {
 	// Express MongoDB session storage
 	app.use(session({
@@ -62,6 +74,13 @@ function initSession (app) {
 			knex: config.knex
 		})
 	}));
+    app.use(passport.initialize());
+    app.use(passport.session());
+    
+    require('./util/auth')(passport);
+    
+    app.use(flash());
+    app.use(messages());
 }
 
 function initHelmetHeaders(app) {
@@ -75,21 +94,25 @@ function initHelmetHeaders(app) {
 
 var app = express();
 
-app.knex = config.knex;
-
 app.use(cookieParser('nKYbykjmnfhvtFTHv'));
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.use(expressValidator());
-app.use(passport.initialize());
-app.use(passport.session());
-app.use(flash());
 app.use(serveStatic('./public'));
-//app.use(express.favicon(__dirname + '/public/images/shortcut-icon.png'));
-app.use(messages());
 
+if (config.env.DEV) app.use(serveStatic('./assets'));
+
+//---------------- TODO: deal with pages those needs and need not a cache
+// Swig will cache templates for you, but you can disable
+// that and use Express's caching instead, if you like:
+app.set('view cache', false);
+// To disable Swig's cache, do the following:
+swig.setDefaults({ cache: false });
+// NOTE: You should always cache templates in a production environment.
+// Don't leave both of these to `false` in production!
+//-------------
 app.engine('html', swig.renderFile);
 app.set('view engine', 'html');
 app.set('views', __dirname + '/views');
@@ -104,17 +127,18 @@ app.use(compress({
 	level: 9
 }));
 
+initLocalVariables(app);
+
 initHelmetHeaders(app);
 
 initSession(app);
 
-initErrorRoutes(app);
-
-require('./util/auth')(passport);
-
 //--------------------------
 //should be the last after all middleware
+
 require('./routes/main')(app);
+
+initErrorRoutes(app);
 
 app.listen(config.env.port);
 

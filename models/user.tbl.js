@@ -11,12 +11,11 @@ module.exports = _.extend({}, TBase, {
         tbl.string('username', 100).unique().notNullable();
         tbl.string('password', 100);
         tbl.string('salt', 256);
-        tbl.string('profileImageURL', 512).defaultTo('');
         tbl.string('provider', 100).notNullable();
-        tbl.json('providerData');
+        tbl.json('provider_data');
         tbl.enu('roles', ['user', 'admin']).defaultTo('user');
-        tbl.string('resetPasswordToken', 100);
-        tbl.datetime('resetPasswordExpires');
+        tbl.string('reset_password_token', 100);
+        tbl.datetime('reset_password_expires');
         tbl.boolean('active');
     },
     
