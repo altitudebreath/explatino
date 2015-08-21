@@ -2,7 +2,7 @@
 
 var crypto = require('crypto'),
     passport = require('passport'),
-    User = require('../models/user.model');
+    User = require('../models/user.m.js');
 
 
 exports.registerPage = function(req, res) {
@@ -39,7 +39,7 @@ exports.registerPost = function(req, res) {
         return;
     }
     
-    new User({email: username, username: username, password: pwd, provider: 'local'}).save()
+    new User({email: username, username: username, password: pwd/*, provider: 'local'*/}).save()
         .then(function(model) {
             passport.authenticate('local')(req, res, function () {
                 res.redirect('/home');

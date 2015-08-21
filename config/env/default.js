@@ -9,11 +9,14 @@ module.exports = {
     db: {
         client: 'mysql',
         connection: {
+            connectionLimit: 100,
+            //socketPath: '/var/lib/mysql/mysql.sock'
         },
         pool: {
             min: 0,
             max: 7
         },
+        dbDriver: 'mysql2',
         migrations: {
             tableName: 'knex_migrations'
         },

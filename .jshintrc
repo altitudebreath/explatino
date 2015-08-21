@@ -21,7 +21,10 @@
 	"smarttabs": false, // Suppresses warnings about mixed tabs and spaces
 	"globals": { // Globals variables.
 		"io": true,
-        "_": true
+        "_": true,
+        "makeClass": true,
+        "Bluebird": true,
+        "CONST": true
 	},
 	"predef": [ // Extra globals.
 		"inject",

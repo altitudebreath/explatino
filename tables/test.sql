@@ -1,0 +1,1 @@
+create table if not exists `test` (`test` varchar(100) not null);

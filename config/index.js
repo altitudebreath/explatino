@@ -8,15 +8,12 @@ require('../util/globals');
 var chalk = require('chalk'),
     glob = require('glob'),
     fs = require('fs'),
-    path = require('path'),
-    knex = require('knex');
-    //bookshelf = require('bookshelf');
-
+    path = require('path');
 /**
  * Validate Secure=true parameter can actually be turned on
  * because it requires certs and key files to be available
  */
-var validateSecureMode = function(config) {
+var validateSecureMode = function (config) {
 
     if (config.secure !== true)
         return true;
@@ -36,7 +33,7 @@ var validateSecureMode = function(config) {
 /**
  * Validate NODE_ENV existance
  */
-var validateEnvironmentVariable = function() {
+var validateEnvironmentVariable = function () {
     var environmentFiles = glob.sync('./config/env/' + process.env.NODE_ENV + '.js');
     console.log();
     if (!environmentFiles.length) {
@@ -52,7 +49,7 @@ var validateEnvironmentVariable = function() {
 };
 
 
-var getGlobbedPaths = function(globPatterns, cutouts) {
+var getGlobbedPaths = function (globPatterns, cutouts) {
     // URL paths regex
     var urlRegex = new RegExp('^(?:[a-z]+:)?\/\/', 'i');
 
@@ -61,7 +58,7 @@ var getGlobbedPaths = function(globPatterns, cutouts) {
 
     // If glob pattern is array so we use each pattern in a recursive way, otherwise we use glob
     if (_.isArray(globPatterns)) {
-        globPatterns.forEach(function(globPattern) {
+        globPatterns.forEach(function (globPattern) {
             output = _.union(output, getGlobbedPaths(globPattern, cutouts));
         });
     } else if (_.isString(globPatterns)) {
@@ -70,7 +67,7 @@ var getGlobbedPaths = function(globPatterns, cutouts) {
         } else {
             var fileNames = glob.sync(globPatterns);
             if (cutouts) {
-                fileNames = fileNames.map(function(file) {
+                fileNames = fileNames.map(function (file) {
                     if (_.isArray(cutouts)) {
                         for (var i in cutouts) {
                             file = file.replace(cutouts[i], '');
@@ -88,7 +85,7 @@ var getGlobbedPaths = function(globPatterns, cutouts) {
     return output;
 };
 
-var initGlobalConfigFiles = function(env, assets) {
+var initGlobalConfigFiles = function (env, assets) {
     // Appending files
     env.files = {
         server: {},
@@ -96,7 +93,7 @@ var initGlobalConfigFiles = function(env, assets) {
         clientRuntime: {}
     };
 
-    var cutouts =  ['client/', 'public/', 'assets/'];
+    var cutouts = ['client/', 'public/', 'assets/'];
 
     // Setting Globbed js files
     env.files.client.js = getGlobbedPaths(assets.client.js, cutouts);
@@ -114,10 +111,31 @@ var initGlobalConfigFiles = function(env, assets) {
 
 var initDB = function (config) {
     var dbConfig = config.env.db;
-    var db = knex(dbConfig);
+    var dbConnConfig = dbConfig.connection;
     
-    config.knex = db;
+    if (dbConfig.dbDriver === 'mysql' && 
+            !dbConnConfig.queryFormat) {   //DB_DRIVER: mysql config for ":placeholder" 
+        dbConnConfig.queryFormat = function (query, values) {
+            if (!values) return query;
+            return query.replace(/\:(\w+)/g, function (txt, key) {
+                if (values.hasOwnProperty(key)) {
+                    return this.escape(values[key]);
+                }
+                return txt;
+            }.bind(this));
+        };
+    }
     
+    if( dbConfig.dbDriver === 'mysql2'){
+        dbConnConfig.namedPlaceholders = true;  //node-mysql2 ":placeholder" syntax //DB_DRIVER
+    }
+    
+    var dbDriver = require(dbConfig.dbDriver);
+    
+    var db = dbDriver.createPool(dbConnConfig);
+
+    config.db = db;
+
     db.close = function (cb) {
         db.destroy(function (err) {
             console.info(chalk.yellow('Disconnected from MongoDB.'));
@@ -130,20 +148,20 @@ var initDB = function (config) {
             console.log(chalk.yellow('SQL: ' + data.sql + ' Data: ' + data.bindings));
         });
     }
-    
+
     //config.orm = bookshelf(db);
 };
 
 var getAssets = function () {
-	// Get the default assets
-	var assets = require(path.join(process.cwd(), 'config/assets/default'));
+    // Get the default assets
+    var assets = require(path.join(process.cwd(), 'config/assets/default'));
 
-	// Get the current assets
-	var environmentAssets = require(path.join(process.cwd(), 'config/assets/', process.env.NODE_ENV)) || {};
+    // Get the current assets
+    var environmentAssets = require(path.join(process.cwd(), 'config/assets/', process.env.NODE_ENV)) || {};
 
-	// Merge assets
-	_.merge(assets, environmentAssets);
-    
+    // Merge assets
+    _.merge(assets, environmentAssets);
+
     return assets;
 };
 
@@ -160,21 +178,21 @@ var getEnv = function () {
     _.merge(env, environmentConfig);
 
     var _path = path.join(process.cwd(), 'config/env/_local.js');
-    
+
     //Merge local config
     try {
         _.merge(env, require(_path));
-    }catch(e){
+    } catch (e) {
         console.log(chalk.magenta('\n_local.js is NOT present\n'));
     }
-    
+
     return env;
 };
 
 /**
  * Initialize global configuration
  */
-var initGlobalConfig = function() {
+var initGlobalConfig = function () {
     // Validate NDOE_ENV existance
     console.log('INIT CONFIG');
     validateEnvironmentVariable();
@@ -183,6 +201,10 @@ var initGlobalConfig = function() {
     
     var env = getEnv();
     
+    if(env.DEBUG){
+        process.env.BLUEBIRD_DEBUG = 1; 
+    }
+
     // Initialize global globbed files
     initGlobalConfigFiles(env, assets);
 
@@ -193,9 +215,9 @@ var initGlobalConfig = function() {
         env: env,
         assets: assets
     };
-    
+
     initDB(config);
-    
+
     return config;
 };
 

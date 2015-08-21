@@ -152,8 +152,8 @@ process.on('message', function (msg) {
         console.log('Closing all connections...');
         // You will have 4000ms to close all connections before
         // the reload mechanism will try to do its job
-        config.knex.close(function () {
-            console.log('Finished closing connections');
+        config.db.end(function (err) {
+            console.log('Finished closing connections, status=' + err);
             // Now we can exit to let the reload mechanism do its job
             process.exit(0);
         });
